@@ -283,3 +283,9 @@ compileExpression model =
             operationAsString <| model.operation
     in
     num1 ++ oper ++ num2
+        ++ (if model.mode == Done then
+                " ="
+
+            else
+                ""
+           )
