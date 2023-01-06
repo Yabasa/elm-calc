@@ -1,10 +1,10 @@
 module Calculator exposing (main)
 
 import Browser
-import Element exposing (Element, alignTop, centerX, centerY, column, el, layout, padding, row, spacing, text)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, layout, padding, row, spacing, text)
 import Element.Border as Border
-import Element.Input exposing (button)
 import Element.Font as Font
+import Element.Input exposing (button)
 import Html exposing (Html)
 
 
@@ -153,11 +153,11 @@ view : Model -> Html Msg
 view model =
     layout []
         (column [ spacing 20 ]
-            [ row [ spacing 50 ]
+            [ resultsArea model
+            , row [ spacing 50 ]
                 [ numberGrid
                 , actionButtons
                 ]
-            , resultsArea model
             ]
         )
 
@@ -196,22 +196,34 @@ actionButtons =
 
 resultsArea : Model -> Element Msg
 resultsArea model =
-    column []
-        [ row []
-            [ el [] <| text "Expression: "
-            , el [ centerX ] <| text <| compileExpression model
+    column
+        [ Element.width Element.fill
+        , Border.width 1
+        , Border.rounded 5
+        ]
+        [ el
+            [ alignRight
+            , Element.padding 5
+            , Font.size 30
             ]
-        , row []
-            [ el [] <| text "Result: "
-            , el [ centerX ] <|
-                text
-                    (if model.result == Nothing then
-                        ""
+          <|
+            text <|
+                compileExpression model
+        , el
+            [ Font.alignRight
+            , Element.width Element.fill
+            , Element.height <| Element.px 70
+            , Font.size 50
+            , Element.padding 10
+            ]
+          <|
+            text
+                (if model.result == Nothing then
+                    ""
 
-                     else
-                        String.fromFloat <| Maybe.withDefault 0 model.result
-                    )
-            ]
+                 else
+                    String.fromFloat <| Maybe.withDefault 0 model.result
+                )
         ]
 
 
@@ -255,7 +267,7 @@ compileExpression model =
     let
         num1 =
             if flattenNums model.num1 == Nothing then
-                ""
+                " "
 
             else
                 String.fromFloat <| Maybe.withDefault 0 <| flattenNums model.num1
@@ -271,4 +283,3 @@ compileExpression model =
             operationAsString <| model.operation
     in
     num1 ++ oper ++ num2
-
