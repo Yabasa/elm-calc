@@ -231,16 +231,16 @@ operationAsString : Operation -> String
 operationAsString oper =
     case oper of
         Add ->
-            " + "
+            "+"
 
         Subtract ->
-            " - "
+            "-"
 
         Equal ->
-            ""
+            "="
 
         Clear ->
-            ""
+            "C"
 
 
 calcButton : Msg -> String -> Element Msg
@@ -266,21 +266,26 @@ compileExpression : Model -> String
 compileExpression model =
     let
         num1 =
-            if flattenNums model.num1 == Nothing then
-                " "
+            if List.isEmpty model.num1 then
+                ""
 
             else
                 String.fromFloat <| Maybe.withDefault 0 <| flattenNums model.num1
 
         num2 =
-            if flattenNums model.num2 == Nothing then
+            if List.isEmpty model.num2 then
                 ""
 
             else
                 String.fromFloat <| Maybe.withDefault 0 <| flattenNums model.num2
 
         oper =
-            operationAsString <| model.operation
+            case model.operation of
+                Clear ->
+                    ""
+
+                _ ->
+                    operationAsString model.operation
     in
     num1
         ++ oper
@@ -289,5 +294,5 @@ compileExpression model =
                 " ="
 
             else
-                ""
+                " "
            )
