@@ -152,7 +152,7 @@ flattenNums nums =
 view : Model -> Html Msg
 view model =
     layout []
-        (column [ spacing 20 ]
+        (column [ centerX, centerY, spacing 20 ]
             [ resultsArea model
             , row [ spacing 50 ]
                 [ numberGrid
@@ -282,7 +282,9 @@ compileExpression model =
         oper =
             operationAsString <| model.operation
     in
-    num1 ++ oper ++ num2
+    num1
+        ++ oper
+        ++ num2
         ++ (if model.mode == Done then
                 " ="
 
