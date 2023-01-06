@@ -1,9 +1,10 @@
 module Calculator exposing (main)
 
 import Browser
-import Element exposing (Element, alignTop, centerX, column, el, layout, padding, row, spacing, text)
+import Element exposing (Element, alignTop, centerX, centerY, column, el, layout, padding, row, spacing, text)
 import Element.Border as Border
 import Element.Input exposing (button)
+import Element.Font as Font
 import Html exposing (Html)
 
 
@@ -240,7 +241,7 @@ calcButton msg labelText =
         , Border.rounded 5
         ]
         { onPress = Just msg
-        , label = el [ centerX ] (text labelText)
+        , label = el [ centerX, centerY, Font.size 40 ] (text labelText)
         }
 
 
