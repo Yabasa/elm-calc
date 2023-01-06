@@ -152,6 +152,10 @@ flattenNums nums =
 
 view : Model -> Html Msg
 view model =
+    let
+        buttonSpacing =
+            spacing 10
+    in
     layout [] <|
         el
             [ Border.width 1
@@ -162,46 +166,47 @@ view model =
             , centerY
             ]
         <|
-            column
-                [ spacing 20 ]
+            column [ spacing 20 ]
                 [ resultsArea model
-                , row [ spacing 50 ]
-                    [ numberGrid
-                    , actionButtons
+                , column [ buttonSpacing ]
+                    [ row [ buttonSpacing ]
+                        [ actionButton Clear
+                        , actionButton Clear
+                        , actionButton Clear
+                        , actionButton Clear
+                        ]
+                    , row [ buttonSpacing ]
+                        [ actionButton Clear
+                        , actionButton Clear
+                        , actionButton Clear
+                        , actionButton Clear
+                        ]
+                    , row [ buttonSpacing ]
+                        [ numberButton 7
+                        , numberButton 8
+                        , numberButton 9
+                        , actionButton Clear
+                        ]
+                    , row [ buttonSpacing ]
+                        [ numberButton 4
+                        , numberButton 5
+                        , numberButton 6
+                        , actionButton Subtract
+                        ]
+                    , row [ buttonSpacing ]
+                        [ numberButton 1
+                        , numberButton 2
+                        , numberButton 3
+                        , actionButton Add
+                        ]
+                    , row [ buttonSpacing ]
+                        [ actionButton Clear
+                        , numberButton 0
+                        , actionButton Clear
+                        , actionButton Equal
+                        ]
                     ]
                 ]
-
-
-numberGrid : Element Msg
-numberGrid =
-    column [ spacing 10 ]
-        [ row [ spacing 10 ]
-            [ numberButton 1
-            , numberButton 2
-            , numberButton 3
-            ]
-        , row [ spacing 10 ]
-            [ numberButton 4
-            , numberButton 5
-            , numberButton 6
-            ]
-        , row [ spacing 10 ]
-            [ numberButton 7
-            , numberButton 8
-            , numberButton 9
-            ]
-        , el [ centerX ] <| numberButton 0
-        ]
-
-
-actionButtons : Element Msg
-actionButtons =
-    column [ alignTop, spacing 10 ]
-        [ actionButton Add
-        , actionButton Subtract
-        , actionButton Equal
-        , actionButton Clear
-        ]
 
 
 resultsArea : Model -> Element Msg
