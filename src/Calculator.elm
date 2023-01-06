@@ -1,7 +1,7 @@
 module Calculator exposing (main)
 
 import Browser
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, layout, padding, row, spacing, text)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, layout, padding, px, row, spacing, text, width)
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
@@ -197,13 +197,13 @@ actionButtons =
 resultsArea : Model -> Element Msg
 resultsArea model =
     column
-        [ Element.width Element.fill
+        [ width fill
         , Border.width 1
         , Border.rounded 5
         ]
         [ el
             [ alignRight
-            , Element.padding 5
+            , padding 5
             , Font.size 30
             ]
           <|
@@ -211,10 +211,10 @@ resultsArea model =
                 compileExpression model
         , el
             [ Font.alignRight
-            , Element.width Element.fill
-            , Element.height <| Element.px 70
+            , width fill
+            , height <| px 70
             , Font.size 50
-            , Element.padding 10
+            , padding 10
             ]
           <|
             text
@@ -248,8 +248,8 @@ calcButton msg labelText =
     button
         [ Border.width 1
         , padding 5
-        , Element.width <| Element.px 70
-        , Element.height <| Element.px 70
+        , width <| px 70
+        , height <| px 70
         , Border.rounded 5
         ]
         { onPress = Just msg
