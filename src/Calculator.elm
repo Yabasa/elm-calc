@@ -152,15 +152,24 @@ flattenNums nums =
 
 view : Model -> Html Msg
 view model =
-    layout []
-        (column [ centerX, centerY, spacing 20 ]
-            [ resultsArea model
-            , row [ spacing 50 ]
-                [ numberGrid
-                , actionButtons
-                ]
+    layout [] <|
+        el
+            [ Border.width 1
+            , Border.rounded 5
+            , Background.color (rgb255 230 230 230)
+            , padding 20
+            , centerX
+            , centerY
             ]
-        )
+        <|
+            column
+                [ spacing 20 ]
+                [ resultsArea model
+                , row [ spacing 50 ]
+                    [ numberGrid
+                    , actionButtons
+                    ]
+                ]
 
 
 numberGrid : Element Msg
@@ -267,7 +276,7 @@ calcButton msg labelText customAttrs =
 
 numberButton : Int -> Element Msg
 numberButton num =
-    calcButton (NumPressed num) (String.fromInt num) []
+    calcButton (NumPressed num) (String.fromInt num) [ Background.color (rgb255 250 250 250) ]
 
 
 actionButton : Operation -> Element Msg
