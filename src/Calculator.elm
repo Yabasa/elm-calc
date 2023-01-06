@@ -1,7 +1,8 @@
 module Calculator exposing (main)
 
 import Browser
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, layout, padding, px, row, spacing, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, layout, padding, px, rgb255, row, spacing, text, width)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
@@ -187,10 +188,10 @@ numberGrid =
 actionButtons : Element Msg
 actionButtons =
     column [ alignTop, spacing 10 ]
-        [ calcButton (OperPressed Add) "+"
-        , calcButton (OperPressed Subtract) "-"
-        , calcButton (OperPressed Equal) "="
-        , calcButton (OperPressed Clear) "C"
+        [ actionButton Add
+        , actionButton Subtract
+        , actionButton Equal
+        , actionButton Clear
         ]
 
 
@@ -243,15 +244,22 @@ operationAsString oper =
             "C"
 
 
-calcButton : Msg -> String -> Element Msg
-calcButton msg labelText =
+calcButton : Msg -> String -> List (Element.Attribute Msg) -> Element Msg
+calcButton msg labelText customAttrs =
+    let
+        defaultAttrs =
+            [ Border.width 1
+            , padding 5
+            , width <| px 70
+            , height <| px 70
+            , Border.rounded 5
+            ]
+
+        finalAttrs =
+            List.append defaultAttrs customAttrs
+    in
     button
-        [ Border.width 1
-        , padding 5
-        , width <| px 70
-        , height <| px 70
-        , Border.rounded 5
-        ]
+        finalAttrs
         { onPress = Just msg
         , label = el [ centerX, centerY, Font.size 40 ] (text labelText)
         }
@@ -259,7 +267,12 @@ calcButton msg labelText =
 
 numberButton : Int -> Element Msg
 numberButton num =
-    calcButton (NumPressed num) (String.fromInt num)
+    calcButton (NumPressed num) (String.fromInt num) []
+
+
+actionButton : Operation -> Element Msg
+actionButton oper =
+    calcButton (OperPressed oper) (operationAsString oper) [ Background.color (rgb255 240 240 240) ]
 
 
 compileExpression : Model -> String
