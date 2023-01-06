@@ -1,0 +1,10 @@
+{
+    "targets": {
+        "My target name": {
+            "inputs": [
+                "src/Calculator.elm"
+            ],
+            "output": "build/calculator.js"
+        }
+    }
+}
