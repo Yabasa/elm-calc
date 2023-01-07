@@ -154,9 +154,18 @@ view : Model -> Html Msg
 view model =
     let
         buttonSpacing =
-            spacing 10
+            spacing 3
     in
-    layout [] <|
+    layout
+        [ Font.family
+            [ Font.external
+                { name = "Open Sans"
+                , url = "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&display=swap"
+                }
+            , Font.sansSerif
+            ]
+        ]
+    <|
         el
             [ Border.width 1
             , Border.rounded 5
@@ -258,15 +267,13 @@ operationAsString oper =
             "C"
 
 
-calcButton : Msg -> String -> List (Element.Attribute Msg) -> Element Msg
+calcButton : Msg -> Element Msg -> List (Element.Attribute Msg) -> Element Msg
 calcButton msg labelText customAttrs =
     let
         defaultAttrs =
-            [ Border.width 1
-            , padding 5
-            , width <| px 70
+            [ width <| px 110
             , height <| px 70
-            , Border.rounded 5
+            , Font.size 30
             ]
 
         finalAttrs =
@@ -275,18 +282,37 @@ calcButton msg labelText customAttrs =
     button
         finalAttrs
         { onPress = Just msg
-        , label = el [ centerX, centerY, Font.size 40 ] (text labelText)
+        , label = labelText
         }
 
 
 numberButton : Int -> Element Msg
 numberButton num =
-    calcButton (NumPressed num) (String.fromInt num) [ Background.color (rgb255 250 250 250) ]
+    let
+        labelText =
+            el [ centerX, centerY ] (text <| String.fromInt num)
+
+        customAttrs =
+            [ Background.color (rgb255 250 250 250) ]
+    in
+    calcButton (NumPressed num) labelText customAttrs
 
 
 actionButton : Operation -> Element Msg
 actionButton oper =
-    calcButton (OperPressed oper) (operationAsString oper) [ Background.color (rgb255 240 240 240) ]
+    let
+        labelText =
+            el
+                [ centerX
+                , centerY
+                , Font.hairline
+                ]
+                (text <| operationAsString oper)
+
+        customAttrs =
+            [ Background.color (rgb255 240 240 240) ]
+    in
+    calcButton (OperPressed oper) labelText customAttrs
 
 
 compileExpression : Model -> String
