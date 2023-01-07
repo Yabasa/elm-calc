@@ -221,14 +221,11 @@ view model =
 resultsArea : Model -> Element Msg
 resultsArea model =
     column
-        [ width fill
-        , Border.width 1
-        , Border.rounded 5
-        ]
+        [ width fill, spacing 10, padding 30 ]
         [ el
             [ alignRight
             , padding 5
-            , Font.size 30
+            , Font.size 20
             ]
           <|
             text <|
@@ -237,7 +234,7 @@ resultsArea model =
             [ Font.alignRight
             , width fill
             , height <| px 70
-            , Font.size 50
+            , Font.size 60
             , padding 10
             ]
           <|
