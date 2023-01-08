@@ -10,12 +10,74 @@ import Html exposing (Html)
 
 
 
---TYPES
+-- STYLING
+
+
+type Style
+    = Windows10
+    | Windows11
+
+
+style : Style
+style =
+    Windows10
+
+
+backgroundColor : Element.Attribute Msg
+backgroundColor =
+    case style of
+        Windows10 ->
+            Background.color (rgb255 230 230 230)
+
+        Windows11 ->
+            Background.color (rgb255 243 242 249)
+
+
+numberButtonStyle : List (Element.Attribute Msg)
+numberButtonStyle =
+    case style of
+        Windows10 ->
+            [ Background.color (rgb255 250 250 250) ]
+
+        Windows11 ->
+            [ Background.color (rgb255 252 247 252)
+            , Border.rounded 5
+            ]
+
+
+operationButtonStyle : List (Element.Attribute Msg)
+operationButtonStyle =
+    case style of
+        Windows10 ->
+            [ Background.color (rgb255 240 240 240) ]
+
+        Windows11 ->
+            [ Background.color (rgb255 252 247 250)
+            , Border.rounded 5
+            ]
+
+
+equalButtonStyle : List (Element.Attribute Msg)
+equalButtonStyle =
+    case style of
+        Windows10 ->
+            operationButtonStyle
+
+        Windows11 ->
+            [ Background.color (rgb255 117 87 48)
+            , Border.rounded 5
+            ]
+
+
+
+-- TYPES
 
 
 type Operation
     = Add
     | Subtract
+    | Multiply
+    | Divide
     | Equal
     | Clear
 
@@ -104,6 +166,12 @@ update msg model =
                                     Subtract ->
                                         Just (num1 - num2)
 
+                                    Multiply ->
+                                        Just (num1 * num2)
+
+                                    Divide ->
+                                        Just (num1 / num2)
+
                                     _ ->
                                         Nothing
                         }
@@ -134,6 +202,26 @@ update msg model =
                     else
                         { model
                             | operation = Subtract
+                            , mode = InputNum2
+                        }
+
+                Multiply ->
+                    if model.mode == Done then
+                        model
+
+                    else
+                        { model
+                            | operation = Multiply
+                            , mode = InputNum2
+                        }
+
+                Divide ->
+                    if model.mode == Done then
+                        model
+
+                    else
+                        { model
+                            | operation = Divide
                             , mode = InputNum2
                         }
 
@@ -169,7 +257,7 @@ view model =
         el
             [ Border.width 1
             , Border.rounded 5
-            , Background.color (rgb255 230 230 230)
+            , backgroundColor
             , padding 20
             , centerX
             , centerY
@@ -179,40 +267,40 @@ view model =
                 [ resultsArea model
                 , column [ buttonSpacing ]
                     [ row [ buttonSpacing ]
-                        [ actionButton Clear
-                        , actionButton Clear
-                        , actionButton Clear
-                        , actionButton Clear
+                        [ operationButton Clear
+                        , operationButton Clear
+                        , operationButton Clear
+                        , operationButton Clear
                         ]
                     , row [ buttonSpacing ]
-                        [ actionButton Clear
-                        , actionButton Clear
-                        , actionButton Clear
-                        , actionButton Clear
+                        [ operationButton Clear
+                        , operationButton Clear
+                        , operationButton Clear
+                        , operationButton Divide
                         ]
                     , row [ buttonSpacing ]
                         [ numberButton 7
                         , numberButton 8
                         , numberButton 9
-                        , actionButton Clear
+                        , operationButton Multiply
                         ]
                     , row [ buttonSpacing ]
                         [ numberButton 4
                         , numberButton 5
                         , numberButton 6
-                        , actionButton Subtract
+                        , operationButton Subtract
                         ]
                     , row [ buttonSpacing ]
                         [ numberButton 1
                         , numberButton 2
                         , numberButton 3
-                        , actionButton Add
+                        , operationButton Add
                         ]
                     , row [ buttonSpacing ]
-                        [ actionButton Clear
+                        [ operationButton Clear
                         , numberButton 0
-                        , actionButton Clear
-                        , actionButton Equal
+                        , operationButton Clear
+                        , operationButton Equal
                         ]
                     ]
                 ]
@@ -255,7 +343,13 @@ operationAsString oper =
             "+"
 
         Subtract ->
-            "-"
+            "−"
+
+        Multiply ->
+            "×"
+
+        Divide ->
+            "÷"
 
         Equal ->
             "="
@@ -290,13 +384,13 @@ numberButton num =
             el [ centerX, centerY ] (text <| String.fromInt num)
 
         customAttrs =
-            [ Background.color (rgb255 250 250 250) ]
+            numberButtonStyle
     in
     calcButton (NumPressed num) labelText customAttrs
 
 
-actionButton : Operation -> Element Msg
-actionButton oper =
+operationButton : Operation -> Element Msg
+operationButton oper =
     let
         labelText =
             el
@@ -307,7 +401,12 @@ actionButton oper =
                 (text <| operationAsString oper)
 
         customAttrs =
-            [ Background.color (rgb255 240 240 240) ]
+            case oper of
+                Equal ->
+                    equalButtonStyle
+
+                _ ->
+                    operationButtonStyle
     in
     calcButton (OperPressed oper) labelText customAttrs
 
