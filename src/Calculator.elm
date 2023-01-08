@@ -1,7 +1,7 @@
 module Calculator exposing (main)
 
 import Browser
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, layout, padding, px, rgb255, row, spacing, text, width)
+import Element exposing (Element, alignRight, centerX, centerY, column, el, fill, height, layout, padding, px, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -78,13 +78,16 @@ type Operation
     | Subtract
     | Multiply
     | Divide
+    | Dot
     | Equal
     | Clear
 
 
 type Mode
     = InputNum1
+    | InputNum1Decimal
     | InputNum2
+    | InputNum2Decimal
     | Done
 
 
@@ -94,8 +97,8 @@ type Msg
 
 
 type alias Model =
-    { num1 : List Int
-    , num2 : List Int
+    { num1 : Maybe Float
+    , num2 : Maybe Float
     , mode : Mode
     , operation : Operation
     , result : Maybe Float
@@ -121,7 +124,7 @@ main =
 
 initialModel : Model
 initialModel =
-    Model [] [] InputNum1 Clear Nothing
+    Model Nothing Nothing InputNum1 Clear Nothing
 
 
 
@@ -134,10 +137,16 @@ update msg model =
         NumPressed num ->
             case model.mode of
                 InputNum1 ->
-                    { model | num1 = List.append model.num1 [ num ] }
+                    { model | num1 = appendIntToNum model.num1 num }
+
+                InputNum1Decimal ->
+                    { model | num1 = appendIntToDecimal model.num1 num }
 
                 InputNum2 ->
-                    { model | num2 = List.append model.num2 [ num ] }
+                    { model | num2 = appendIntToNum model.num2 num }
+
+                InputNum2Decimal ->
+                    { model | num2 = appendIntToDecimal model.num2 num }
 
                 Done ->
                     model
@@ -145,16 +154,16 @@ update msg model =
         OperPressed oper ->
             case oper of
                 Equal ->
-                    if List.isEmpty model.num1 || List.isEmpty model.num2 then
+                    if model.num1 == Nothing || model.num2 == Nothing then
                         model
 
                     else
                         let
                             num1 =
-                                Maybe.withDefault 0 <| flattenNums model.num1
+                                Maybe.withDefault 0 <| model.num1
 
                             num2 =
-                                Maybe.withDefault 0 <| flattenNums model.num2
+                                Maybe.withDefault 0 <| model.num2
                         in
                         { model
                             | mode = Done
@@ -178,12 +187,29 @@ update msg model =
 
                 Clear ->
                     { model
-                        | num1 = []
-                        , num2 = []
+                        | num1 = Nothing
+                        , num2 = Nothing
                         , mode = InputNum1
                         , operation = Clear
                         , result = Nothing
                     }
+
+                Dot ->
+                    case model.mode of
+                        Done ->
+                            model
+
+                        InputNum1 ->
+                            { model | mode = InputNum1Decimal }
+
+                        InputNum1Decimal ->
+                            model
+
+                        InputNum2 ->
+                            { model | mode = InputNum2Decimal }
+
+                        InputNum2Decimal ->
+                            model
 
                 Add ->
                     if model.mode == Done then
@@ -226,12 +252,29 @@ update msg model =
                         }
 
 
-flattenNums : List Int -> Maybe Float
-flattenNums nums =
-    nums
-        |> List.map String.fromInt
-        |> List.foldr (++) ""
-        |> String.toFloat
+appendIntToNum : Maybe Float -> Int -> Maybe Float
+appendIntToNum currentNum newDigit =
+    case currentNum of
+        Nothing ->
+            Just (toFloat newDigit)
+
+        Just num ->
+            String.fromFloat num
+                ++ String.fromInt newDigit
+                |> String.toFloat
+
+
+appendIntToDecimal : Maybe Float -> Int -> Maybe Float
+appendIntToDecimal currentNum newDigit =
+    case currentNum of
+        Nothing ->
+            Just (toFloat newDigit / 10)
+
+        Just num ->
+            String.fromFloat num
+                ++ "."
+                ++ String.fromInt newDigit
+                |> String.toFloat
 
 
 
@@ -299,7 +342,7 @@ view model =
                     , row [ buttonSpacing ]
                         [ operationButton Clear
                         , numberButton 0
-                        , operationButton Clear
+                        , operationButton Dot
                         , operationButton Equal
                         ]
                     ]
@@ -351,6 +394,9 @@ operationAsString oper =
         Divide ->
             "÷"
 
+        Dot ->
+            "."
+
         Equal ->
             "="
 
@@ -382,11 +428,8 @@ numberButton num =
     let
         labelText =
             el [ centerX, centerY ] (text <| String.fromInt num)
-
-        customAttrs =
-            numberButtonStyle
     in
-    calcButton (NumPressed num) labelText customAttrs
+    calcButton (NumPressed num) labelText numberButtonStyle
 
 
 operationButton : Operation -> Element Msg
@@ -415,18 +458,20 @@ compileExpression : Model -> String
 compileExpression model =
     let
         num1 =
-            if List.isEmpty model.num1 then
-                ""
+            case model.num1 of
+                Nothing ->
+                    ""
 
-            else
-                String.fromFloat <| Maybe.withDefault 0 <| flattenNums model.num1
+                Just num ->
+                    String.fromFloat num
 
         num2 =
-            if List.isEmpty model.num2 then
-                ""
+            case model.num2 of
+                Nothing ->
+                    ""
 
-            else
-                String.fromFloat <| Maybe.withDefault 0 <| flattenNums model.num2
+                Just num ->
+                    String.fromFloat num
 
         oper =
             case model.operation of
