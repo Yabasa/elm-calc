@@ -79,6 +79,7 @@ type Operation
     | Multiply
     | Divide
     | Dot
+    | Negate
     | Equal
     | Clear
 
@@ -211,6 +212,23 @@ update msg model =
                         InputNum2Decimal ->
                             model
 
+                Negate ->
+                    case model.mode of
+                        Done ->
+                            model
+
+                        InputNum1 ->
+                            { model | num1 = negateNum model.num1 }
+
+                        InputNum1Decimal ->
+                            { model | num1 = negateNum model.num1 }
+
+                        InputNum2 ->
+                            { model | num2 = negateNum model.num2 }
+
+                        InputNum2Decimal ->
+                            { model | num2 = negateNum model.num2 }
+
                 Add ->
                     if model.mode == Done then
                         model
@@ -277,6 +295,11 @@ appendIntToDecimal currentNum newDigit =
                 |> String.toFloat
 
 
+negateNum : Maybe Float -> Maybe Float
+negateNum numToNegate =
+    Maybe.map (\x -> x * -1) numToNegate
+
+
 
 -- VIEW
 
@@ -340,7 +363,7 @@ view model =
                         , operationButton Add
                         ]
                     , row [ buttonSpacing ]
-                        [ operationButton Clear
+                        [ operationButton Negate
                         , numberButton 0
                         , operationButton Dot
                         , operationButton Equal
@@ -396,6 +419,9 @@ operationAsString oper =
 
         Dot ->
             "."
+
+        Negate ->
+            "±"
 
         Equal ->
             "="
