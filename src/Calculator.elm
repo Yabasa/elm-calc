@@ -82,6 +82,7 @@ type Operation
     | Negate
     | Equal
     | Clear
+    | ClearEntry
 
 
 type Mode
@@ -194,6 +195,23 @@ update msg model =
                         , operation = Clear
                         , result = Nothing
                     }
+
+                ClearEntry ->
+                    case model.mode of
+                        Done ->
+                            model
+
+                        InputNum1 ->
+                            { model | num1 = Nothing }
+
+                        InputNum1Decimal ->
+                            { model | num1 = Nothing }
+
+                        InputNum2 ->
+                            { model | num2 = Nothing }
+
+                        InputNum2Decimal ->
+                            { model | num2 = Nothing }
 
                 Dot ->
                     case model.mode of
@@ -340,7 +358,7 @@ view model =
                         ]
                     , row [ buttonSpacing ]
                         [ operationButton Clear
-                        , operationButton Clear
+                        , operationButton ClearEntry
                         , operationButton Clear
                         , operationButton Divide
                         ]
@@ -429,6 +447,9 @@ operationAsString oper =
         Clear ->
             "C"
 
+        ClearEntry ->
+            "CE"
+
 
 calcButton : Msg -> Element Msg -> List (Element.Attribute Msg) -> Element Msg
 calcButton msg labelText customAttrs =
@@ -502,6 +523,9 @@ compileExpression model =
         oper =
             case model.operation of
                 Clear ->
+                    ""
+
+                ClearEntry ->
                     ""
 
                 _ ->
