@@ -78,33 +78,34 @@ type Operation
     | Subtract
     | Multiply
     | Divide
-    | Dot
-    | Negate
+
+
+type Action
+    = Negate
     | Equal
+    | Dot
     | Clear
     | ClearEntry
 
 
-type Mode
-    = InputNum1
-    | InputNum1Decimal
-    | InputNum2
-    | InputNum2Decimal
-    | Done
+type IncFloat
+    = Whole Int
+    | WholeWithPoint Int
+    | Decimal Int Int
 
 
 type Msg
     = NumPressed Int
     | OperPressed Operation
+    | ActionPressed Action
 
 
-type alias Model =
-    { num1 : Maybe Float
-    , num2 : Maybe Float
-    , mode : Mode
-    , operation : Operation
-    , result : Maybe Float
-    }
+type Model
+    = Cleared
+    | InputNum1 IncFloat
+    | InputOper IncFloat Operation
+    | InputNum2 IncFloat Operation IncFloat
+    | Done IncFloat Operation IncFloat Float
 
 
 
@@ -126,7 +127,7 @@ main =
 
 initialModel : Model
 initialModel =
-    Model Nothing Nothing InputNum1 Clear Nothing
+    Cleared
 
 
 
@@ -136,186 +137,189 @@ initialModel =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        NumPressed num ->
-            case model.mode of
-                InputNum1 ->
-                    { model | num1 = appendIntToNum model.num1 num }
+        NumPressed numPressed ->
+            case model of
+                Cleared ->
+                    InputNum1 (Whole numPressed)
 
-                InputNum1Decimal ->
-                    { model | num1 = appendIntToDecimal model.num1 num }
+                InputNum1 num1 ->
+                    InputNum1 (addDigitToIncFloat num1 numPressed)
 
-                InputNum2 ->
-                    { model | num2 = appendIntToNum model.num2 num }
+                InputOper num1 oper ->
+                    InputNum2 num1 oper (Whole numPressed)
 
-                InputNum2Decimal ->
-                    { model | num2 = appendIntToDecimal model.num2 num }
+                InputNum2 num1 oper num2 ->
+                    InputNum2 num1 oper (addDigitToIncFloat num2 numPressed)
 
-                Done ->
+                Done _ _ _ _ ->
                     model
 
-        OperPressed oper ->
-            case oper of
-                Equal ->
-                    if model.num1 == Nothing || model.num2 == Nothing then
-                        model
+        OperPressed operPressed ->
+            case model of
+                Cleared ->
+                    model
 
-                    else
-                        let
-                            num1 =
-                                Maybe.withDefault 0 <| model.num1
+                InputNum1 num1 ->
+                    InputOper num1 operPressed
 
-                            num2 =
-                                Maybe.withDefault 0 <| model.num2
-                        in
-                        { model
-                            | mode = Done
-                            , result =
-                                case model.operation of
-                                    Add ->
-                                        Just (num1 + num2)
+                InputOper num1 _ ->
+                    InputOper num1 operPressed
 
-                                    Subtract ->
-                                        Just (num1 - num2)
+                InputNum2 _ _ _ ->
+                    model
 
-                                    Multiply ->
-                                        Just (num1 * num2)
+                Done _ _ _ _ ->
+                    model
 
-                                    Divide ->
-                                        Just (num1 / num2)
-
-                                    _ ->
-                                        Nothing
-                        }
-
+        ActionPressed actionPressed ->
+            case actionPressed of
                 Clear ->
-                    { model
-                        | num1 = Nothing
-                        , num2 = Nothing
-                        , mode = InputNum1
-                        , operation = Clear
-                        , result = Nothing
-                    }
+                    Cleared
 
                 ClearEntry ->
-                    case model.mode of
-                        Done ->
+                    case model of
+                        Cleared ->
+                            Cleared
+
+                        InputNum1 _ ->
+                            Cleared
+
+                        InputOper num1 oper ->
+                            InputOper num1 oper
+
+                        InputNum2 num1 oper _ ->
+                            InputOper num1 oper
+
+                        Done _ _ _ _ ->
                             model
-
-                        InputNum1 ->
-                            { model | num1 = Nothing }
-
-                        InputNum1Decimal ->
-                            { model | num1 = Nothing }
-
-                        InputNum2 ->
-                            { model | num2 = Nothing }
-
-                        InputNum2Decimal ->
-                            { model | num2 = Nothing }
 
                 Dot ->
-                    case model.mode of
-                        Done ->
-                            model
+                    case model of
+                        Cleared ->
+                            InputNum1 (dotifyIncFloat <| Whole 0)
 
-                        InputNum1 ->
-                            { model | mode = InputNum1Decimal }
+                        InputNum1 num1 ->
+                            InputNum1 (dotifyIncFloat num1)
 
-                        InputNum1Decimal ->
-                            model
+                        InputOper num1 oper ->
+                            InputNum2 num1 oper (dotifyIncFloat <| Whole 0)
 
-                        InputNum2 ->
-                            { model | mode = InputNum2Decimal }
+                        InputNum2 num1 oper num2 ->
+                            InputNum2 num1 oper (dotifyIncFloat num2)
 
-                        InputNum2Decimal ->
+                        Done _ _ _ _ ->
                             model
 
                 Negate ->
-                    case model.mode of
-                        Done ->
+                    case model of
+                        Cleared ->
                             model
 
-                        InputNum1 ->
-                            { model | num1 = negateNum model.num1 }
+                        InputNum1 num1 ->
+                            InputNum1 (negateNum num1)
 
-                        InputNum1Decimal ->
-                            { model | num1 = negateNum model.num1 }
+                        InputOper _ _ ->
+                            model
 
-                        InputNum2 ->
-                            { model | num2 = negateNum model.num2 }
+                        InputNum2 num1 oper num2 ->
+                            InputNum2 num1 oper (negateNum num2)
 
-                        InputNum2Decimal ->
-                            { model | num2 = negateNum model.num2 }
+                        Done _ _ _ _ ->
+                            model
 
-                Add ->
-                    if model.mode == Done then
-                        model
+                Equal ->
+                    case model of
+                        Cleared ->
+                            model
 
-                    else
-                        { model
-                            | operation = Add
-                            , mode = InputNum2
-                        }
+                        InputNum1 _ ->
+                            model
 
-                Subtract ->
-                    if model.mode == Done then
-                        model
+                        InputOper _ _ ->
+                            model
 
-                    else
-                        { model
-                            | operation = Subtract
-                            , mode = InputNum2
-                        }
+                        InputNum2 num1 oper num2 ->
+                            let
+                                num1AsFloat =
+                                    incFloatAsFloat num1
 
-                Multiply ->
-                    if model.mode == Done then
-                        model
+                                num2AsFloat =
+                                    incFloatAsFloat num2
 
-                    else
-                        { model
-                            | operation = Multiply
-                            , mode = InputNum2
-                        }
+                                result =
+                                    case oper of
+                                        Add ->
+                                            num1AsFloat + num2AsFloat
 
-                Divide ->
-                    if model.mode == Done then
-                        model
+                                        Subtract ->
+                                            num1AsFloat - num2AsFloat
 
-                    else
-                        { model
-                            | operation = Divide
-                            , mode = InputNum2
-                        }
+                                        Multiply ->
+                                            num1AsFloat * num2AsFloat
+
+                                        Divide ->
+                                            num1AsFloat / num2AsFloat
+                            in
+                            Done num1 oper num2 result
+
+                        Done _ _ _ _ ->
+                            model
 
 
-appendIntToNum : Maybe Float -> Int -> Maybe Float
-appendIntToNum currentNum newDigit =
-    case currentNum of
-        Nothing ->
-            Just (toFloat newDigit)
-
-        Just num ->
-            String.fromFloat num
-                ++ String.fromInt newDigit
-                |> String.toFloat
-
-
-appendIntToDecimal : Maybe Float -> Int -> Maybe Float
-appendIntToDecimal currentNum newDigit =
-    case currentNum of
-        Nothing ->
-            Just (toFloat newDigit / 10)
-
-        Just num ->
-            String.fromFloat num
-                ++ "."
-                ++ String.fromInt newDigit
-                |> String.toFloat
-
-
-negateNum : Maybe Float -> Maybe Float
+negateNum : IncFloat -> IncFloat
 negateNum numToNegate =
-    Maybe.map (\x -> x * -1) numToNegate
+    case numToNegate of
+        Whole num ->
+            Whole (negate num)
+
+        WholeWithPoint num ->
+            WholeWithPoint (negate num)
+
+        Decimal whole decimal ->
+            Decimal (negate whole) decimal
+
+
+dotifyIncFloat : IncFloat -> IncFloat
+dotifyIncFloat incFloat =
+    case incFloat of
+        Whole num ->
+            WholeWithPoint num
+
+        _ ->
+            incFloat
+
+
+addDigitToIncFloat : IncFloat -> Int -> IncFloat
+addDigitToIncFloat currentNum newDigit =
+    case currentNum of
+        Whole num ->
+            Whole (num * 10 + newDigit)
+
+        WholeWithPoint num ->
+            WholeWithPoint (num * 10 + newDigit)
+
+        Decimal whole decimal ->
+            Decimal whole (decimal * 10 + newDigit)
+
+
+incFloatAsFloat : IncFloat -> Float
+incFloatAsFloat incFloat =
+    case incFloat of
+        Whole num ->
+            toFloat num
+
+        WholeWithPoint num ->
+            toFloat num
+
+        Decimal whole decimal ->
+            let
+                decimalLength =
+                    String.fromInt decimal |> String.length
+
+                decimalValue =
+                    toFloat decimal / (10 * decimalLength |> toFloat)
+            in
+            toFloat whole + decimalValue
 
 
 
@@ -351,15 +355,15 @@ view model =
                 [ resultsArea model
                 , column [ buttonSpacing ]
                     [ row [ buttonSpacing ]
-                        [ operationButton Clear
-                        , operationButton Clear
-                        , operationButton Clear
-                        , operationButton Clear
+                        [ actionButton Clear
+                        , actionButton Clear
+                        , actionButton Clear
+                        , actionButton Clear
                         ]
                     , row [ buttonSpacing ]
-                        [ operationButton Clear
-                        , operationButton ClearEntry
-                        , operationButton Clear
+                        [ actionButton Clear
+                        , actionButton ClearEntry
+                        , actionButton Clear
                         , operationButton Divide
                         ]
                     , row [ buttonSpacing ]
@@ -381,10 +385,10 @@ view model =
                         , operationButton Add
                         ]
                     , row [ buttonSpacing ]
-                        [ operationButton Negate
+                        [ actionButton Negate
                         , numberButton 0
-                        , operationButton Dot
-                        , operationButton Equal
+                        , actionButton Dot
+                        , actionButton Equal
                         ]
                     ]
                 ]
@@ -392,6 +396,15 @@ view model =
 
 resultsArea : Model -> Element Msg
 resultsArea model =
+    let
+        result =
+            case model of
+                Done _ _ _ res ->
+                    String.fromFloat res
+
+                _ ->
+                    ""
+    in
     column
         [ width fill, spacing 10, padding 30 ]
         [ el
@@ -410,13 +423,7 @@ resultsArea model =
             , padding 10
             ]
           <|
-            text
-                (if model.result == Nothing then
-                    ""
-
-                 else
-                    String.fromFloat <| Maybe.withDefault 0 model.result
-                )
+            text result
         ]
 
 
@@ -435,14 +442,18 @@ operationAsString oper =
         Divide ->
             "÷"
 
-        Dot ->
-            "."
 
+actionAsString : Action -> String
+actionAsString oper =
+    case oper of
         Negate ->
             "±"
 
         Equal ->
             "="
+
+        Dot ->
+            "."
 
         Clear ->
             "C"
@@ -489,56 +500,59 @@ operationButton oper =
                 , Font.hairline
                 ]
                 (text <| operationAsString oper)
+    in
+    calcButton (OperPressed oper) labelText []
+
+
+actionButton : Action -> Element Msg
+actionButton action =
+    let
+        labelText =
+            el
+                [ centerX
+                , centerY
+                , Font.hairline
+                ]
+                (text <| actionAsString action)
 
         customAttrs =
-            case oper of
+            case action of
                 Equal ->
                     equalButtonStyle
 
                 _ ->
                     operationButtonStyle
     in
-    calcButton (OperPressed oper) labelText customAttrs
+    calcButton (ActionPressed action) labelText customAttrs
+
+
+incFloatAsString : IncFloat -> String
+incFloatAsString incFloat =
+    case incFloat of
+        Whole num ->
+            String.fromInt num
+
+        WholeWithPoint num ->
+            String.fromInt num
+
+        Decimal whole decimal ->
+            String.fromInt whole ++ "." ++ String.fromInt decimal
 
 
 compileExpression : Model -> String
 compileExpression model =
-    let
-        num1 =
-            case model.num1 of
-                Nothing ->
-                    ""
+    case model of
+        InputNum1 num1 ->
+            incFloatAsString num1
 
-                Just num ->
-                    String.fromFloat num
+        InputOper num1 oper ->
+            incFloatAsString num1 ++ operationAsString oper
 
-        num2 =
-            case model.num2 of
-                Nothing ->
-                    ""
+        InputNum2 num1 oper num2 ->
+            incFloatAsString num1 ++ operationAsString oper ++ incFloatAsString num2
 
-                Just num ->
-                    String.fromFloat num
+        Done num1 oper num2 _ ->
+            incFloatAsString num1 ++ operationAsString oper ++ incFloatAsString num2 ++ " ="
 
-        oper =
-            case model.operation of
-                Clear ->
-                    ""
-
-                ClearEntry ->
-                    ""
-
-                _ ->
-                    operationAsString model.operation
-    in
-    num1
-        ++ " "
-        ++ oper
-        ++ " "
-        ++ num2
-        ++ (if model.mode == Done then
-                " ="
-
-            else
-                " "
-           )
+        Cleared ->
+            ""
