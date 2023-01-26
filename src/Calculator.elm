@@ -555,4 +555,4 @@ compileExpression model =
             incFloatAsString num1 ++ operationAsString oper ++ incFloatAsString num2 ++ " ="
 
         Cleared ->
-            ""
+            " "
