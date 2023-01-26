@@ -45,8 +45,8 @@ numberButtonStyle =
             ]
 
 
-operationButtonStyle : List (Element.Attribute Msg)
-operationButtonStyle =
+operActionButtonStyle : List (Element.Attribute Msg)
+operActionButtonStyle =
     case style of
         Windows10 ->
             [ Background.color (rgb255 240 240 240) ]
@@ -61,7 +61,7 @@ equalButtonStyle : List (Element.Attribute Msg)
 equalButtonStyle =
     case style of
         Windows10 ->
-            operationButtonStyle
+            operActionButtonStyle
 
         Windows11 ->
             [ Background.color (rgb255 117 87 48)
@@ -501,7 +501,7 @@ operationButton oper =
                 ]
                 (text <| operationAsString oper)
     in
-    calcButton (OperPressed oper) labelText []
+    calcButton (OperPressed oper) labelText operActionButtonStyle
 
 
 actionButton : Action -> Element Msg
@@ -521,7 +521,7 @@ actionButton action =
                     equalButtonStyle
 
                 _ ->
-                    operationButtonStyle
+                    operActionButtonStyle
     in
     calcButton (ActionPressed action) labelText customAttrs
 
