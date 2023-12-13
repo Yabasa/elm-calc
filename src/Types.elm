@@ -5,10 +5,40 @@ import Browser.Navigation exposing (Key)
 import Url exposing (Url)
 
 
-type alias FrontendModel =
-    { key : Key
-    , message : String
-    }
+type Operation
+    = Add
+    | Subtract
+    | Multiply
+    | Divide
+
+
+type Action
+    = Negate
+    | Equal
+    | Dot
+    | Clear
+    | ClearEntry
+
+
+type IncFloat
+    = Whole Int
+    | WholeWithPoint Int
+    | Decimal Int Int
+
+
+type FrontendMsg
+    = NumPressed Int
+    | OperPressed Operation
+    | ActionPressed Action
+    | NoOpFrontendMsg
+
+
+type FrontendModel
+    = Cleared
+    | InputNum1 IncFloat
+    | InputOper IncFloat Operation
+    | InputNum2 IncFloat Operation IncFloat
+    | Done IncFloat Operation IncFloat Float
 
 
 type alias BackendModel =
@@ -16,10 +46,6 @@ type alias BackendModel =
     }
 
 
-type FrontendMsg
-    = UrlClicked UrlRequest
-    | UrlChanged Url
-    | NoOpFrontendMsg
 
 
 type ToBackend
@@ -32,3 +58,4 @@ type BackendMsg
 
 type ToFrontend
     = NoOpToFrontend
+
