@@ -6,8 +6,10 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
-import Html exposing (Html)
+import Html exposing (Html, input)
+import Html.Attributes exposing (action)
 import Lamdera
+import Lamdera.Migrations exposing (ModelMigration)
 import Types exposing (..)
 
 
@@ -53,10 +55,45 @@ init =
 update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 update msg model =
     case msg of
-        NumPressed num ->
-            ( Input num, Cmd.none )
+        SymbolPressed symbol ->
+            case model of
+                Input currentInput ->
+                    ( Input <| currentInput ++ symbol, Cmd.none )
 
-        _ ->
+                _ ->
+                    ( Input symbol, Cmd.none )
+
+        ActionPressed Clear ->
+            ( Cleared, Cmd.none )
+
+        ActionPressed Backspace ->
+            let
+                currentInput =
+                    case model of
+                        Input input ->
+                            input
+
+                        _ ->
+                            ""
+
+                new_model =
+                    if String.length currentInput < 2 then
+                        Cleared
+
+                    else
+                        Input <| String.dropRight 1 currentInput
+            in
+            ( new_model, Cmd.none )
+
+        ActionPressed Equals ->
+            case model of
+                Input currentInput ->
+                    ( Done <| currentInput ++ "=", Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        NoOpFrontendMsg ->
             ( model, Cmd.none )
 
 
@@ -119,33 +156,33 @@ buttonArea =
             ]
         , row [ buttonSpacing ]
             [ actionButton Clear
-            , actionButton ClearEntry
+            , actionButton Backspace
             , actionButton Clear
-            , operationButton Divide
+            , symbolButton "/"
             ]
         , row [ buttonSpacing ]
-            [ numberButton 7
-            , numberButton 8
-            , numberButton 9
-            , operationButton Multiply
+            [ symbolButton "7"
+            , symbolButton "8"
+            , symbolButton "9"
+            , symbolButton "x"
             ]
         , row [ buttonSpacing ]
-            [ numberButton 4
-            , numberButton 5
-            , numberButton 6
-            , operationButton Subtract
+            [ symbolButton "4"
+            , symbolButton "5"
+            , symbolButton "6"
+            , symbolButton "-"
             ]
         , row [ buttonSpacing ]
-            [ numberButton 1
-            , numberButton 2
-            , numberButton 3
-            , operationButton Add
+            [ symbolButton "1"
+            , symbolButton "2"
+            , symbolButton "3"
+            , symbolButton "+"
             ]
         , row [ buttonSpacing ]
-            [ actionButton Negate
-            , numberButton 0
-            , actionButton Dot
-            , actionButton Equal
+            [ symbolButton "-"
+            , symbolButton "0"
+            , symbolButton "."
+            , actionButton Equals
             ]
         ]
 
@@ -155,11 +192,14 @@ resultsArea model =
     let
         result =
             case model of
-                Done exprString ->
+                Cleared ->
+                    ""
+
+                Input exprString ->
                     exprString
 
-                _ ->
-                    ""
+                Done exprString ->
+                    exprString
     in
     column
         [ width fill, spacing 10, padding 30 ]
@@ -170,7 +210,7 @@ resultsArea model =
             ]
           <|
             text <|
-                compileExpression model
+                result
         , el
             [ Font.alignRight
             , width fill
@@ -181,41 +221,6 @@ resultsArea model =
           <|
             text result
         ]
-
-
-operationAsString : Operation -> String
-operationAsString oper =
-    case oper of
-        Add ->
-            "+"
-
-        Subtract ->
-            "−"
-
-        Multiply ->
-            "×"
-
-        Divide ->
-            "÷"
-
-
-actionAsString : Action -> String
-actionAsString oper =
-    case oper of
-        Negate ->
-            "±"
-
-        Equal ->
-            "="
-
-        Dot ->
-            "."
-
-        Clear ->
-            "C"
-
-        ClearEntry ->
-            "CE"
 
 
 calcButton : FrontendMsg -> Element FrontendMsg -> List (Element.Attribute FrontendMsg) -> Element FrontendMsg
@@ -237,62 +242,35 @@ calcButton msg labelText customAttrs =
         }
 
 
-numberButton : Int -> Element FrontendMsg
-numberButton num =
+symbolButton : String -> Element FrontendMsg
+symbolButton symbol =
     let
         labelText =
-            el [ centerX, centerY ] (text <| String.fromInt num)
+            el [ centerX, centerY ] (text symbol)
     in
-    calcButton (NumPressed <| String.fromInt num) labelText numberButtonStyle
-
-
-operationButton : Operation -> Element FrontendMsg
-operationButton oper =
-    let
-        labelText =
-            el
-                [ centerX
-                , centerY
-                , Font.hairline
-                ]
-                (text <| operationAsString oper)
-    in
-    calcButton (OperPressed oper) labelText operActionButtonStyle
+    calcButton (SymbolPressed symbol) labelText numberButtonStyle
 
 
 actionButton : Action -> Element FrontendMsg
 actionButton action =
     let
         labelText =
-            el
-                [ centerX
-                , centerY
-                , Font.hairline
-                ]
-                (text <| actionAsString action)
-
-        customAttrs =
-            case action of
-                Equal ->
-                    equalButtonStyle
-
-                _ ->
-                    operActionButtonStyle
+            el [ centerX, centerY ] (text <| actionAsString action)
     in
-    calcButton (ActionPressed action) labelText customAttrs
+    calcButton (ActionPressed action) labelText numberButtonStyle
 
 
-compileExpression : FrontendModel -> String
-compileExpression model =
-    case model of
-        Input exprStr ->
-            exprStr
+actionAsString : Action -> String
+actionAsString action =
+    case action of
+        Clear ->
+            "C"
 
-        Done exprStr ->
-            exprStr ++ " ="
+        Backspace ->
+            "<-"
 
-        Cleared ->
-            " "
+        Equals ->
+            "="
 
 
 backgroundColor : Element.Attribute FrontendMsg

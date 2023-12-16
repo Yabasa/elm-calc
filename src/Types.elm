@@ -5,30 +5,14 @@ import Browser.Navigation exposing (Key)
 import Url exposing (Url)
 
 
-type Operation
-    = Add
-    | Subtract
-    | Multiply
-    | Divide
-
-
 type Action
-    = Negate
-    | Equal
-    | Dot
-    | Clear
-    | ClearEntry
-
-
-type IncFloat
-    = Whole Int
-    | WholeWithPoint Int
-    | Decimal Int Int
+    = Clear
+    | Backspace
+    | Equals
 
 
 type FrontendMsg
-    = NumPressed String
-    | OperPressed Operation
+    = SymbolPressed String
     | ActionPressed Action
     | NoOpFrontendMsg
 
@@ -42,8 +26,6 @@ type FrontendModel
 type alias BackendModel =
     { message : String
     }
-
-
 
 
 type ToBackend
