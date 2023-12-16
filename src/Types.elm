@@ -27,7 +27,7 @@ type IncFloat
 
 
 type FrontendMsg
-    = NumPressed Int
+    = NumPressed String
     | OperPressed Operation
     | ActionPressed Action
     | NoOpFrontendMsg
@@ -35,10 +35,8 @@ type FrontendMsg
 
 type FrontendModel
     = Cleared
-    | InputNum1 IncFloat
-    | InputOper IncFloat Operation
-    | InputNum2 IncFloat Operation IncFloat
-    | Done IncFloat Operation IncFloat Float
+    | Input String
+    | Done String
 
 
 type alias BackendModel =
