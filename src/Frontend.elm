@@ -10,6 +10,7 @@ import Html exposing (Html, input)
 import Html.Attributes exposing (action)
 import Lamdera
 import Lamdera.Migrations exposing (ModelMigration)
+import MathParser as MP
 import Types exposing (..)
 
 
@@ -85,10 +86,10 @@ update msg model =
             in
             ( new_model, Cmd.none )
 
-        ActionPressed Equals ->
+        ActionPressed ParenWrap ->
             case model of
                 Input currentInput ->
-                    ( Done <| currentInput ++ "=", Cmd.none )
+                    ( Input <| "(" ++ currentInput ++ ")", Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -149,40 +150,40 @@ buttonArea =
     in
     column [ buttonSpacing ]
         [ row [ buttonSpacing ]
-            [ actionButton Clear
+            [ symbolButton ""
+            , symbolButton ""
             , actionButton Clear
-            , actionButton Clear
-            , actionButton Clear
+            , actionButton Backspace
             ]
         , row [ buttonSpacing ]
-            [ actionButton Clear
-            , actionButton Backspace
-            , actionButton Clear
-            , symbolButton "/"
+            [ symbolButton "("
+            , symbolButton ")"
+            , actionButton ParenWrap
+            , symbolButton "^"
             ]
         , row [ buttonSpacing ]
             [ symbolButton "7"
             , symbolButton "8"
             , symbolButton "9"
-            , symbolButton "x"
+            , symbolButton "/"
             ]
         , row [ buttonSpacing ]
             [ symbolButton "4"
             , symbolButton "5"
             , symbolButton "6"
-            , symbolButton "-"
+            , symbolButton "x"
             ]
         , row [ buttonSpacing ]
             [ symbolButton "1"
             , symbolButton "2"
             , symbolButton "3"
-            , symbolButton "+"
+            , symbolButton "-"
             ]
         , row [ buttonSpacing ]
-            [ symbolButton "-"
+            [ symbolButton ""
             , symbolButton "0"
             , symbolButton "."
-            , actionButton Equals
+            , symbolButton "+"
             ]
         ]
 
@@ -190,16 +191,24 @@ buttonArea =
 resultsArea : FrontendModel -> Element FrontendMsg
 resultsArea model =
     let
-        result =
+        exprString =
             case model of
                 Cleared ->
                     ""
 
-                Input exprString ->
-                    exprString
+                Input expr ->
+                    expr
 
-                Done exprString ->
-                    exprString
+        exprParsed =
+            MP.parse exprString
+
+        result =
+            case exprParsed of
+                Err err ->
+                    " "
+
+                Ok expr ->
+                    String.fromFloat (MP.evaluate expr)
     in
     column
         [ width fill, spacing 10, padding 30 ]
@@ -210,12 +219,16 @@ resultsArea model =
             ]
           <|
             text <|
-                result
+                if exprString == "" then
+                    " "
+
+                else
+                    exprString ++ " ="
         , el
             [ Font.alignRight
             , width fill
             , height <| px 70
-            , Font.size 60
+            , Font.size 40
             , padding 10
             ]
           <|
@@ -267,10 +280,10 @@ actionAsString action =
             "C"
 
         Backspace ->
-            "<-"
+            "Del"
 
-        Equals ->
-            "="
+        ParenWrap ->
+            "()"
 
 
 backgroundColor : Element.Attribute FrontendMsg

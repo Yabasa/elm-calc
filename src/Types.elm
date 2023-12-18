@@ -8,7 +8,7 @@ import Url exposing (Url)
 type Action
     = Clear
     | Backspace
-    | Equals
+    | ParenWrap
 
 
 type FrontendMsg
@@ -20,7 +20,6 @@ type FrontendMsg
 type FrontendModel
     = Cleared
     | Input String
-    | Done String
 
 
 type alias BackendModel =
