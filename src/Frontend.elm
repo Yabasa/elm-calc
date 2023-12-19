@@ -6,7 +6,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
-import Html exposing (Html, input)
+import Html exposing (Html, h1, input)
 import Html.Attributes exposing (action)
 import Lamdera
 import Lamdera.Migrations exposing (ModelMigration)
@@ -97,8 +97,86 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        ActionPressed Negate ->
+            case model of
+                Input currentInput ->
+                    case MP.parse currentInput of
+                        Ok _ ->
+                            ( Input (toggleNegation currentInput), Cmd.none )
+
+                        Err _ ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
         NoOpFrontendMsg ->
             ( model, Cmd.none )
+
+
+toggleNegation : String -> String
+toggleNegation exprString =
+    if String.left 1 exprString == "-" then
+        let
+            restOfInput =
+                String.right (String.length exprString - 1) exprString
+        in
+        if String.left 1 restOfInput == "(" || isJustNumber restOfInput then
+            restOfInput
+
+        else
+            exprString
+
+    else if isWrappedInParens exprString || isJustNumber exprString then
+        "-" ++ exprString
+
+    else
+        "-(" ++ exprString ++ ")"
+
+
+isWrappedInParens : String -> Bool
+isWrappedInParens exprString =
+    if String.left 1 exprString /= "(" then
+        False
+
+    else
+        let
+            stringLen =
+                String.length exprString
+
+            ( position, _ ) =
+                String.foldl parenChecker ( 1, 1 ) (String.right (stringLen - 1) exprString)
+        in
+        if position == stringLen then
+            True
+
+        else
+            False
+
+
+parenChecker : Char -> ( Int, Int ) -> ( Int, Int )
+parenChecker char ( position, parenCount ) =
+    if parenCount == 0 then
+        ( position, 0 )
+
+    else if char == '(' then
+        ( position + 1, parenCount + 1 )
+
+    else if char == ')' then
+        ( position + 1, parenCount - 1 )
+
+    else
+        ( position + 1, parenCount )
+
+
+isJustNumber : String -> Bool
+isJustNumber exprString =
+    case String.toFloat exprString of
+        Nothing ->
+            False
+
+        Just _ ->
+            True
 
 
 updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
@@ -183,7 +261,7 @@ buttonArea =
             , symbolButton "-"
             ]
         , row [ buttonSpacing ]
-            [ symbolButton ""
+            [ actionButton Negate
             , symbolButton "0"
             , symbolButton "."
             , symbolButton "+"
@@ -287,6 +365,9 @@ actionAsString action =
 
         ParenWrap ->
             "(..)"
+
+        Negate ->
+            "-(..)"
 
 
 backgroundColor : Element.Attribute FrontendMsg

@@ -9,6 +9,7 @@ type Action
     = Clear
     | Backspace
     | ParenWrap
+    | Negate
 
 
 type FrontendMsg

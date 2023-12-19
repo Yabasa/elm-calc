@@ -10,6 +10,7 @@ import Parser exposing (..)
 type Expr
     = Integer Int
     | Floating Float
+    | Negation Expr
     | Add Expr Expr
     | Div Expr Expr
     | Sub Expr Expr
@@ -25,6 +26,9 @@ evaluate expr =
 
         Floating n ->
             n
+
+        Negation a ->
+            evaluate a * -1
 
         Add a b ->
             evaluate a + evaluate b
@@ -90,6 +94,9 @@ term =
             |= lazy (\_ -> expression)
             |. spaces
             |. symbol ")"
+        , succeed Negation
+            |. symbol "-"
+            |= lazy (\_ -> expression)
         ]
 
 
