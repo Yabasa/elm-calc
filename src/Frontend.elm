@@ -81,6 +81,9 @@ update msg model =
                     if String.length currentInput < 2 then
                         Cleared
 
+                    else if String.right 1 currentInput == ")" then
+                        Input <| String.dropLeft 1 <| String.dropRight 1 currentInput
+
                     else
                         Input <| String.dropRight 1 currentInput
             in
@@ -283,7 +286,7 @@ actionAsString action =
             "Del"
 
         ParenWrap ->
-            "()"
+            "(..)"
 
 
 backgroundColor : Element.Attribute FrontendMsg
