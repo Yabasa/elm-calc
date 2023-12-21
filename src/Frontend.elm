@@ -13,17 +13,9 @@ import Types exposing (..)
 
 
 
--- STYLING
-
-
-type Style
-    = Windows10
-    | Windows11
-
-
-style : Style
-style =
-    Windows10
+--
+-- APP
+--
 
 
 app =
@@ -408,47 +400,22 @@ actionAsString action =
             "sqrt(..)"
 
 
+
+--
+-- STYLING
+--
+
+
 backgroundColor : Element.Attribute FrontendMsg
 backgroundColor =
-    case style of
-        Windows10 ->
-            Background.color (rgb255 230 230 230)
-
-        Windows11 ->
-            Background.color (rgb255 243 242 249)
+    Background.color (rgb255 230 230 230)
 
 
 numberButtonStyle : List (Element.Attribute FrontendMsg)
 numberButtonStyle =
-    case style of
-        Windows10 ->
-            [ Background.color (rgb255 250 250 250) ]
-
-        Windows11 ->
-            [ Background.color (rgb255 252 247 252)
-            , Border.rounded 5
-            ]
+    [ Background.color (rgb255 250 250 250) ]
 
 
 operActionButtonStyle : List (Element.Attribute FrontendMsg)
 operActionButtonStyle =
-    case style of
-        Windows10 ->
-            [ Background.color (rgb255 240 240 240) ]
-
-        Windows11 ->
-            [ Background.color (rgb255 252 247 250)
-            , Border.rounded 5
-            ]
-
-
-equalButtonStyle : List (Element.Attribute FrontendMsg)
-equalButtonStyle =
-    case style of
-        Windows10 ->
-            operActionButtonStyle
-
-        Windows11 ->
-            [ Background.color (rgb255 117 87 48)
-            , Border.rounded 5
-            ]
+    [ Background.color (rgb255 240 240 240) ]
