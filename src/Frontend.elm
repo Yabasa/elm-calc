@@ -119,7 +119,7 @@ update msg model =
                     ( Input (currentInput ++ "sqrt("), Cmd.none )
 
                 Cleared ->
-                    ( model, Cmd.none )
+                    ( Input "sqrt(", Cmd.none )
 
         NoOpFrontendMsg ->
             ( model, Cmd.none )
