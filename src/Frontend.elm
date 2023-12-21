@@ -256,39 +256,39 @@ buttonArea =
     column [ buttonSpacing ]
         [ row [ buttonSpacing ]
             [ actionButton SqrtOpen
-            , actionButton SqrtWrap
-            , actionButton Clear
-            , actionButton Backspace
+            , symbolButton "("
+            , symbolButton ")"
+            , symbolButton "^"
             ]
         , row [ buttonSpacing ]
-            [ symbolButton "("
-            , symbolButton ")"
+            [ actionButton SqrtWrap
+            , actionButton Negate
             , actionButton ParenWrap
-            , symbolButton "^"
+            , symbolButton "/"
             ]
         , row [ buttonSpacing ]
             [ symbolButton "7"
             , symbolButton "8"
             , symbolButton "9"
-            , symbolButton "/"
+            , symbolButton "x"
             ]
         , row [ buttonSpacing ]
             [ symbolButton "4"
             , symbolButton "5"
             , symbolButton "6"
-            , symbolButton "x"
+            , symbolButton "-"
             ]
         , row [ buttonSpacing ]
             [ symbolButton "1"
             , symbolButton "2"
             , symbolButton "3"
-            , symbolButton "-"
+            , symbolButton "+"
             ]
         , row [ buttonSpacing ]
-            [ actionButton Negate
+            [ symbolButton "."
             , symbolButton "0"
-            , symbolButton "."
-            , symbolButton "+"
+            , actionButton Backspace
+            , actionButton Clear
             ]
         ]
 
