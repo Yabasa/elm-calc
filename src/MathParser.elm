@@ -1,5 +1,5 @@
 module MathParser exposing
-    ( Expr
+    ( Expr(..)
     , evaluate
     , parse
     )
@@ -16,6 +16,7 @@ type Expr
     | Sub Expr Expr
     | Mul Expr Expr
     | Pow Expr Expr
+    | Sqrt Expr
 
 
 evaluate : Expr -> Float
@@ -44,6 +45,8 @@ evaluate expr =
 
         Pow a b ->
             evaluate a ^ evaluate b
+        Sqrt a ->
+            sqrt (evaluate a)
 
 
 parse : String -> Result (List DeadEnd) Expr
@@ -94,9 +97,16 @@ term =
             |= lazy (\_ -> expression)
             |. spaces
             |. symbol ")"
+        , succeed Sqrt
+            |. keyword "sqrt"
+            |. symbol "("
+            |. spaces
+            |= lazy (\_ -> expression)
+            |. spaces
+            |. symbol ")"
         , succeed Negation
             |. symbol "-"
-            |= lazy (\_ -> expression)
+            |= lazy (\_ -> term)
         ]
 
 
