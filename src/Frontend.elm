@@ -108,6 +108,27 @@ update msg model =
                 Cleared ->
                     ( model, Cmd.none )
 
+        ActionPressed SqrtWrap ->
+            case model of
+                Input currentInput ->
+                    case MP.parse currentInput of
+                        Ok _ ->
+                            ( Input (toggleSqrtWrap currentInput), Cmd.none )
+
+                        Err _ ->
+                            ( model, Cmd.none )
+
+                Cleared ->
+                    ( model, Cmd.none )
+
+        ActionPressed SqrtOpen ->
+            case model of
+                Input currentInput ->
+                    ( Input (currentInput ++ "sqrt("), Cmd.none )
+
+                Cleared ->
+                    ( model, Cmd.none )
+
         NoOpFrontendMsg ->
             ( model, Cmd.none )
 
@@ -130,6 +151,19 @@ toggleNegation exprString =
 
     else
         "-(" ++ exprString ++ ")"
+
+
+toggleSqrtWrap : String -> String
+toggleSqrtWrap exprString =
+    if String.left 5 exprString == "sqrt(" then
+        exprString
+            |> String.right (String.length exprString - 4)
+
+    else if String.left 1 exprString == "(" then
+        "sqrt" ++ exprString
+
+    else
+        "sqrt(" ++ exprString ++ ")"
 
 
 isWrappedInParens : String -> Bool
@@ -229,8 +263,8 @@ buttonArea =
     in
     column [ buttonSpacing ]
         [ row [ buttonSpacing ]
-            [ symbolButton ""
-            , symbolButton ""
+            [ actionButton SqrtOpen
+            , actionButton SqrtWrap
             , actionButton Clear
             , actionButton Backspace
             ]
@@ -283,7 +317,7 @@ resultsArea model =
 
         result =
             case exprParsed of
-                Err err ->
+                Err _ ->
                     " "
 
                 Ok expr ->
@@ -366,6 +400,12 @@ actionAsString action =
 
         Negate ->
             "-(..)"
+
+        SqrtOpen ->
+            "sqrt("
+
+        SqrtWrap ->
+            "sqrt(..)"
 
 
 backgroundColor : Element.Attribute FrontendMsg

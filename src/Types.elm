@@ -10,6 +10,8 @@ type Action
     | Backspace
     | ParenWrap
     | Negate
+    | SqrtOpen
+    | SqrtWrap
 
 
 type FrontendMsg
