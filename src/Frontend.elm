@@ -6,10 +6,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
-import Html exposing (Html, h1, input)
 import Html.Attributes exposing (action)
 import Lamdera
-import Lamdera.Migrations exposing (ModelMigration)
 import MathParser as MP
 import Types exposing (..)
 
@@ -61,7 +59,7 @@ update msg model =
                 Input currentInput ->
                     ( Input <| currentInput ++ symbol, Cmd.none )
 
-                _ ->
+                Cleared ->
                     ( Input symbol, Cmd.none )
 
         ActionPressed Clear ->
@@ -74,7 +72,7 @@ update msg model =
                         Input input ->
                             input
 
-                        _ ->
+                        Cleared ->
                             ""
 
                 new_model =
@@ -94,7 +92,7 @@ update msg model =
                 Input currentInput ->
                     ( Input <| "(" ++ currentInput ++ ")", Cmd.none )
 
-                _ ->
+                Cleared ->
                     ( model, Cmd.none )
 
         ActionPressed Negate ->
@@ -107,7 +105,7 @@ update msg model =
                         Err _ ->
                             ( model, Cmd.none )
 
-                _ ->
+                Cleared ->
                     ( model, Cmd.none )
 
         NoOpFrontendMsg ->
